@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { LogoNavbar, LogoSidebar } from './LogoDGB'
 
 const VALIDATOR_ROLES = ['CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH']
 
@@ -12,51 +13,85 @@ export default function Layout({ children }) {
     navigate('/login')
   }
 
-  const isValidator = VALIDATOR_ROLES.includes(user?.role)
+  const isValidator     = VALIDATOR_ROLES.includes(user?.role)
+  const isAdmin         = user?.role === 'ADMIN'
+  const isDirAdmin      = user?.role === 'ADMIN_DIRECTION'
+  const isAnyAdmin      = isAdmin || isDirAdmin
+
+  const link = ({ isActive }) => isActive ? 'active' : ''
 
   return (
     <div className="layout">
-      {/* ── Navbar ── */}
+
+      {/* ══ Navbar ══ */}
       <nav className="navbar">
-        <div className="navbar-brand">
-          ⊙ DGB <span>Gestion des congés et décisions</span>
-        </div>
+        <LogoNavbar />
+
         <div className="navbar-user">
-          <span>{user?.prenom} {user?.nom}</span>
-          <span style={{ color: '#7fb3f5', fontSize: 11 }}>
-            {user?.direction?.sigle} — {user?.role}
+          <span className="navbar-user-name">{user?.prenom} {user?.nom}</span>
+          <span className="navbar-user-role">
+            {user?.direction?.sigle ? `${user.direction.sigle} · ` : ''}
+            {user?.role}
           </span>
           <button className="btn-logout" onClick={handleLogout}>Déconnexion</button>
         </div>
       </nav>
 
       <div className="body-wrap">
-        {/* ── Sidebar ── */}
+
+        {/* ══ Sidebar sombre ══ */}
         <aside className="sidebar">
-          <p className="sidebar-section">Général</p>
-          <NavLink to="/dashboard"  className={({ isActive }) => isActive ? 'active' : ''}>
-            🏠 Tableau de bord
-          </NavLink>
 
-          <p className="sidebar-section">Mes demandes</p>
-          <NavLink to="/demandes"     className={({ isActive }) => isActive ? 'active' : ''}>
-            📋 Historique
-          </NavLink>
-          <NavLink to="/demandes/new" className={({ isActive }) => isActive ? 'active' : ''}>
-            ✏️ Nouvelle demande
-          </NavLink>
+          <div className="sidebar-logo">
+            <LogoSidebar />
+          </div>
 
-          {isValidator && (
+          {/* ── Menu ADMIN global ── */}
+          {isAdmin && (
             <>
-              <p className="sidebar-section">Validation</p>
-              <NavLink to="/validations" className={({ isActive }) => isActive ? 'active' : ''}>
-                ✅ À valider
-              </NavLink>
+              <p className="sidebar-section">Administration</p>
+              <NavLink to="/admin/dashboard" className={link}>📊 Tableau de bord</NavLink>
+              <NavLink to="/admin/agents"    className={link}>👥 Agents</NavLink>
             </>
           )}
+
+          {/* ── Menu ADMIN direction ── */}
+          {isDirAdmin && (
+            <>
+              <p className="sidebar-section">
+                Ma direction — {user?.direction?.sigle}
+              </p>
+              <NavLink to="/admin/dashboard" className={link}>📊 Tableau de bord</NavLink>
+              <NavLink to="/admin/agents"    className={link}>👥 Agents</NavLink>
+            </>
+          )}
+
+          {/* ── Menu AGENT / VALIDEUR ── */}
+          {!isAnyAdmin && (
+            <>
+              <p className="sidebar-section">Général</p>
+              <NavLink to="/dashboard" className={link}>🏠 Tableau de bord</NavLink>
+
+              <p className="sidebar-section">Mes demandes</p>
+              <NavLink to="/demandes"     end={false} className={link}>📋 Historique</NavLink>
+              <NavLink to="/demandes/new" className={link}>✏️ Nouvelle demande</NavLink>
+
+              {isValidator && (
+                <>
+                  <p className="sidebar-section">Validation</p>
+                  <NavLink to="/validations" className={link}>✅ À valider</NavLink>
+                </>
+              )}
+            </>
+          )}
+
+          {/* ── Pied sidebar ── */}
+          <div className="sidebar-footer">
+            <div className="sidebar-tricolor" />
+          </div>
         </aside>
 
-        {/* ── Contenu principal ── */}
+        {/* ══ Contenu principal ══ */}
         <main className="main">{children}</main>
       </div>
     </div>

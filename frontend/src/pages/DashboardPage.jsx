@@ -41,31 +41,28 @@ export default function DashboardPage() {
       {/* ── Cartes statistiques ── */}
       <div className="cards-row">
         <div className="stat-card">
+          <span className="stat-icon">📅</span>
           <div className="value">{solde?.solde_disponible ?? '—'}</div>
           <div className="label">Jours disponibles</div>
         </div>
 
-        <div className="stat-card" style={{ borderLeftColor: 'var(--warning)' }}>
-          <div className="value" style={{ color: 'var(--warning)' }}>
-            {demandes.filter(d => d.statut === 'EN_ATTENTE').length}
-          </div>
-          <div className="label">Demandes en attente</div>
+        <div className="stat-card orange">
+          <span className="stat-icon">⏳</span>
+          <div className="value">{demandes.filter(d => d.statut === 'EN_ATTENTE').length}</div>
+          <div className="label">En attente</div>
         </div>
 
-        <div className="stat-card" style={{ borderLeftColor: 'var(--success)' }}>
-          <div className="value" style={{ color: 'var(--success)' }}>
-            {demandes.filter(d => d.statut === 'APPROUVEE').length}
-          </div>
-          <div className="label">Demandes approuvées</div>
+        <div className="stat-card green">
+          <span className="stat-icon">✅</span>
+          <div className="value">{demandes.filter(d => d.statut === 'APPROUVEE').length}</div>
+          <div className="label">Approuvées</div>
         </div>
 
         {VALIDATOR_ROLES.includes(user?.role) && (
-          <div
-            className="stat-card"
-            style={{ borderLeftColor: '#8e44ad', cursor: 'pointer' }}
-            onClick={() => navigate('/validations')}
-          >
-            <div className="value" style={{ color: '#8e44ad' }}>{pending}</div>
+          <div className="stat-card purple" style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/validations')}>
+            <span className="stat-icon">🔔</span>
+            <div className="value">{pending}</div>
             <div className="label">À valider</div>
           </div>
         )}
@@ -76,7 +73,7 @@ export default function DashboardPage() {
         <div className="card">
           <div className="card-title">Mon profil</div>
           <div className="info-row"><span className="info-label">Profil :</span>
-            <span>{user?.profil === 'AGENT_ETAT' ? 'Agent de l\'État' : 'Agent contractuel'}</span></div>
+            <span>{user?.profil === 'AGENT_ETAT' ? 'Fonctionnaire' : 'Contractuel'}</span></div>
           <div className="info-row"><span className="info-label">Matricule :</span>
             <span>{user?.matricule || '—'}</span></div>
           <div className="info-row"><span className="info-label">Corps :</span>

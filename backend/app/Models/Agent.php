@@ -19,7 +19,7 @@ class Agent extends Authenticatable
         'nom', 'prenom', 'email', 'password',
         'direction_id', 'division_id',
         'poste', 'corps',
-        'profil', 'matricule', 'role',
+        'profil', 'matricule', 'role', 'must_change_password',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -27,8 +27,9 @@ class Agent extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'    => 'datetime',
+            'password'             => 'hashed',
+            'must_change_password' => 'boolean',
         ];
     }
 

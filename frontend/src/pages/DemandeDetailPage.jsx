@@ -80,7 +80,7 @@ export default function DemandeDetailPage() {
           <div className="info-row"><span className="info-label">Corps :</span>{agent?.corps || '—'}</div>
           <div className="info-row"><span className="info-label">Poste :</span>{agent?.poste}</div>
           <div className="info-row"><span className="info-label">Profil :</span>
-            {agent?.profil === 'AGENT_ETAT' ? 'Agent de l\'État' : 'Contractuel'}</div>
+            {agent?.profil === 'AGENT_ETAT' ? 'Fonctionnaire' : 'Contractuel'}</div>
           <div className="info-row"><span className="info-label">Direction :</span>{agent?.direction?.nom}</div>
           <div className="info-row"><span className="info-label">Division :</span>{agent?.division?.nom}</div>
         </div>

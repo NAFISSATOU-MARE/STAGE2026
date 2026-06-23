@@ -15,13 +15,13 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->foreignId('direction_id')->constrained('directions');
-            $table->foreignId('division_id')->constrained('divisions');
+            $table->foreignId('direction_id')->nullable()->constrained('directions')->nullOnDelete();
+            $table->foreignId('division_id')->nullable()->constrained('divisions')->nullOnDelete();
             $table->string('poste');
             $table->string('corps')->nullable();
-            $table->enum('profil', ['CONTRACTUEL', 'AGENT_ETAT']);
+            $table->enum('profil', ['CONTRACTUEL', 'AGENT_ETAT'])->default('CONTRACTUEL');
             $table->string('matricule')->nullable()->unique();
-            $table->enum('role', ['AGENT', 'CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH'])->default('AGENT');
+            $table->enum('role', ['AGENT', 'CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH', 'ADMIN', 'ADMIN_DIRECTION'])->default('AGENT');
             $table->rememberToken();
             $table->timestamps();
         });

@@ -16,6 +16,15 @@ class AgentSeeder extends Seeder
         $dir = fn(string $sigle) => Direction::where('sigle', $sigle)->firstOrFail();
         $div = fn(int $dirId, string $sigle) => Division::where('direction_id', $dirId)->where('sigle', $sigle)->firstOrFail();
 
+        // ─── Administrateur système ───────────────────────────────────────────
+        $this->creer([
+            'nom' => 'ADMINISTRATEUR', 'prenom' => 'Système',
+            'email' => 'admin@dgb.sn',
+            'poste' => 'Administrateur Système', 'corps' => null,
+            'profil' => 'CONTRACTUEL', 'matricule' => null, 'role' => 'ADMIN',
+            'direction_id' => null, 'division_id' => null,
+        ]);
+
         // ─── Valideurs centraux (DAP & DRH) ──────────────────────────────────
         // Ces deux agents valident à des niveaux 3 et 4 pour toutes les
         // demandes de décision des agents de l'État.
