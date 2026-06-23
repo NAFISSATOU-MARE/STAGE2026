@@ -1,23 +1,35 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DirectionController;
+use App\Http\Controllers\Api\DemandeController;
+use App\Http\Controllers\Api\ValidationController;
 
-// Routes publiques
-Route::post('/login',  [\App\Http\Controllers\Api\AuthController::class, 'login']);
+// ─── Public ───────────────────────────────────────────────────────────────────
+Route::post('/login', [AuthController::class, 'login']);
 
-// Routes protégées
+// ─── Authentifié ──────────────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
-    Route::get('/me',     [\App\Http\Controllers\Api\AuthController::class, 'me']);
-    Route::get('/solde',  [\App\Http\Controllers\Api\AuthController::class, 'solde']);
 
-    Route::get('/directions',                    [\App\Http\Controllers\Api\DirectionController::class, 'index']);
-    Route::get('/directions/{direction}/divisions', [\App\Http\Controllers\Api\DirectionController::class, 'divisions']);
+    // Auth
+    Route::post('/logout',  [AuthController::class, 'logout']);
+    Route::get('/me',       [AuthController::class, 'me']);
+    Route::get('/solde',    [AuthController::class, 'solde']);
 
-    Route::apiResource('/demandes', \App\Http\Controllers\Api\DemandeController::class)
-         ->only(['index', 'store', 'show']);
-    Route::get('/demandes/{demande}/pdf', [\App\Http\Controllers\Api\DemandeController::class, 'pdf']);
+    // Référentiel
+    Route::get('/directions',                         [DirectionController::class, 'index']);
+    Route::get('/directions/{direction}/divisions',   [DirectionController::class, 'divisions']);
 
-    Route::get('/validations/pending',         [\App\Http\Controllers\Api\ValidationController::class, 'pending']);
-    Route::post('/validations/{demande}',      [\App\Http\Controllers\Api\ValidationController::class, 'store']);
+    // Demandes (tout agent authentifié)
+    Route::get('/demandes',          [DemandeController::class, 'index']);
+    Route::post('/demandes',         [DemandeController::class, 'store']);
+    Route::get('/demandes/{demande}',[DemandeController::class, 'show']);
+    Route::get('/demandes/{demande}/pdf', [DemandeController::class, 'pdf']);
+
+    // Validations (réservé aux valideurs)
+    Route::middleware('role:CHEF_DIVISION,DIRECTEUR,DAP,DRH')->group(function () {
+        Route::get('/validations/pending',       [ValidationController::class, 'pending']);
+        Route::post('/validations/{demande}',    [ValidationController::class, 'store']);
+    });
 });
