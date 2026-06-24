@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../../api/axios'
 
-const ROLES   = ['AGENT', 'CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH', 'ADMIN']
+const ROLES   = ['AGENT', 'CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH', 'ADMIN', 'DGB', 'MINISTRE']
 const PROFILS = ['CONTRACTUEL', 'AGENT_ETAT']
 
 const ROLE_COLOR = {
@@ -11,6 +11,8 @@ const ROLE_COLOR = {
   DAP:           { bg: '#ead5ff', color: '#6b21a8' },
   DRH:           { bg: '#fde4c8', color: '#9a3412' },
   ADMIN:         { bg: '#fde8e8', color: '#c0392b' },
+  DGB:           { bg: '#d4f0d4', color: '#145214' },
+  MINISTRE:      { bg: '#fff3cd', color: '#856404' },
 }
 
 const INIT = {
@@ -78,7 +80,21 @@ export default function AgentsAdminPage() {
     ? (directions.find(d => d.id == form.direction_id)?.divisions ?? [])
     : []
 
-  const besoinDirDiv = form.role !== 'ADMIN'
+  const NO_DIR = ['ADMIN', 'DRH', 'DGB', 'MINISTRE']
+  const NO_DIV = ['ADMIN', 'DIRECTEUR', 'DAP', 'DRH', 'DGB', 'MINISTRE']
+
+  const besoinDir = !NO_DIR.includes(form.role)
+  const besoinDiv = !NO_DIV.includes(form.role)
+
+  const handleRole = e => {
+    const role = e.target.value
+    setForm(f => ({
+      ...f,
+      role,
+      direction_id: NO_DIR.includes(role) ? '' : f.direction_id,
+      division_id:  NO_DIV.includes(role) ? '' : f.division_id,
+    }))
+  }
 
   const soumettre = async e => {
     e.preventDefault()
@@ -267,7 +283,7 @@ export default function AgentsAdminPage() {
               <div className="form-group">
                 <label>Adresse e-mail *</label>
                 <input type="email" className="form-control" value={form.email}
-                  onChange={set('email')} required />
+                  onChange={set('email')} autoComplete="off" required />
               </div>
 
               <div className="form-group">
@@ -277,13 +293,14 @@ export default function AgentsAdminPage() {
                     : 'Nouveau mot de passe (laisser vide = inchangé)'}
                 </label>
                 <input type="password" className="form-control" value={form.password}
-                  onChange={set('password')} required={modal === 'create'}
+                  onChange={set('password')} autoComplete="new-password"
+                  required={modal === 'create'}
                   placeholder={modal === 'create' ? '' : '••••••••'} />
               </div>
 
               <div className="form-group">
                 <label>Rôle *</label>
-                <select className="form-control" value={form.role} onChange={set('role')}>
+                <select className="form-control" value={form.role} onChange={handleRole}>
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
                 {form.role === 'ADMIN' && (
@@ -291,24 +308,47 @@ export default function AgentsAdminPage() {
                     Un administrateur n'est pas rattaché à une direction/division.
                   </p>
                 )}
+                {form.role === 'DAP' && (
+                  <p style={{ fontSize: 11, color: 'var(--dgb-green)', marginTop: 4 }}>
+                    Le DAP est directeur de la direction DAP — pas de division propre.
+                  </p>
+                )}
+                {form.role === 'DRH' && (
+                  <p style={{ fontSize: 11, color: 'var(--dgb-green)', marginTop: 4 }}>
+                    Le DRH n'est rattaché à aucune direction ni division.
+                  </p>
+                )}
+                {form.role === 'DGB' && (
+                  <p style={{ fontSize: 11, color: 'var(--dgb-green)', marginTop: 4 }}>
+                    Le DGB n'est rattaché à aucune direction ni division.
+                  </p>
+                )}
+                {form.role === 'MINISTRE' && (
+                  <p style={{ fontSize: 11, color: 'var(--dgb-green)', marginTop: 4 }}>
+                    Le Ministre n'est rattaché à aucune direction ni division.
+                  </p>
+                )}
               </div>
 
-              <div className="form-grid">
+              {besoinDir && (
                 <div className="form-group">
-                  <label>Direction {besoinDirDiv ? '*' : ''}</label>
+                  <label>Direction *</label>
                   <select className="form-control" value={form.direction_id}
-                    onChange={handleDir} required={besoinDirDiv}>
+                    onChange={handleDir} required>
                     <option value="">— Sélectionner —</option>
                     {directions.map(d => (
                       <option key={d.id} value={d.id}>{d.sigle} — {d.nom}</option>
                     ))}
                   </select>
                 </div>
+              )}
+
+              {besoinDiv && (
                 <div className="form-group">
-                  <label>Division {besoinDirDiv ? '*' : ''}</label>
+                  <label>Division *</label>
                   <select className="form-control" value={form.division_id}
                     onChange={set('division_id')}
-                    required={besoinDirDiv}
+                    required
                     disabled={!form.direction_id}>
                     <option value="">— Sélectionner —</option>
                     {divisions.map(d => (
@@ -316,7 +356,7 @@ export default function AgentsAdminPage() {
                     ))}
                   </select>
                 </div>
-              </div>
+              )}
 
               <div className="form-group">
                 <label>Poste / Fonction *</label>

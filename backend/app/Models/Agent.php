@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 
 class Agent extends Authenticatable
@@ -64,24 +65,34 @@ class Agent extends Authenticatable
         $anneesService = max(1, now()->year - $anneeCreation + 1);
         $droits = min(30 * $anneesService, 90);
 
+        // Seuls les congés approuvés consomment le solde ; les décisions en sont exclues
         $joursConsommes = (int) $this->demandes()
             ->where('statut', 'APPROUVEE')
+            ->where('type', 'CONGE')
             ->sum('nombre_jours');
 
         return max(0, $droits - $joursConsommes);
     }
 
     /**
-     * Retourne la décision active (APPROUVEE, type DECISION, dont la période couvre aujourd'hui).
+     * Retourne la décision active : DECISION approuvée dont la date d'expiration
+     * (date_validation + duree_jours) est dans le futur.
+     * COALESCE(duree_jours, 180) assure la rétrocompatibilité avec les décisions sans durée.
+     * La comparaison est effectuée en PHP pour rester compatible SQLite et MySQL.
      */
     public function decisionActive(): ?Demande
     {
         return $this->demandes()
             ->where('type', 'DECISION')
             ->where('statut', 'APPROUVEE')
-            ->where('date_debut', '<=', now()->toDateString())
-            ->where('date_fin', '>=', now()->toDateString())
-            ->latest()
+            ->whereNotNull('date_validation')
+            ->get()
+            ->filter(fn(Demande $d) => $d->date_validation
+                ->copy()
+                ->addDays($d->duree_jours ?? 180)
+                ->isFuture()
+            )
+            ->sortByDesc('date_validation')
             ->first();
     }
 
@@ -90,7 +101,10 @@ class Agent extends Authenticatable
         if ($this->profil === 'CONTRACTUEL') {
             return true;
         }
-        // AGENT_ETAT : congé possible seulement pendant une décision active
+        // Seuls DGB et MINISTRE ont leur propre circuit sans prérequis de décision active.
+        if (in_array($this->role, ['DGB', 'MINISTRE'], true)) {
+            return true;
+        }
         return $this->decisionActive() !== null;
     }
 }

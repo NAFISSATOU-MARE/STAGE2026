@@ -80,8 +80,12 @@ class AuthController extends Controller
             'peut_soumettre_conge' => $agent->peutSoumettreConge(),
             'decision_active'      => $decisionActive ? [
                 'id'               => $decisionActive->id,
-                'date_debut'       => $decisionActive->date_debut->toDateString(),
-                'date_fin'         => $decisionActive->date_fin->toDateString(),
+                'date_validation'  => $decisionActive->date_validation->toDateString(),
+                'date_expiration'  => $decisionActive->date_validation
+                                        ->copy()
+                                        ->addDays($decisionActive->duree_jours ?? 180)
+                                        ->toDateString(),
+                'duree_jours'      => $decisionActive->duree_jours,
                 'numero_reference' => $decisionActive->numero_reference,
             ] : null,
         ]);

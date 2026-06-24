@@ -34,8 +34,8 @@ class DemandeController extends Controller
 
         $data = $request->validate([
             'type'            => 'required|in:CONGE,DECISION',
-            'date_debut'      => 'required|date|after_or_equal:today',
-            'date_fin'        => 'required|date|after_or_equal:date_debut',
+            'date_debut'      => 'required_if:type,CONGE|nullable|date|after_or_equal:today',
+            'date_fin'        => 'required_if:type,CONGE|nullable|date|after_or_equal:date_debut',
             'motif'           => 'required|string|max:1000',
             'lieu_jouissance' => 'nullable|string|max:255',
         ]);
@@ -47,9 +47,12 @@ class DemandeController extends Controller
             ], 422);
         }
 
-        // AGENT_ETAT + CONGE → nécessite une décision active
+        // Tous les AGENT_ETAT sauf DGB et MINISTRE nécessitent une décision active pour un congé.
         $decisionActive = null;
-        if ($data['type'] === 'CONGE' && $agent->profil === 'AGENT_ETAT') {
+        if ($data['type'] === 'CONGE'
+            && $agent->profil === 'AGENT_ETAT'
+            && ! in_array($agent->role, ['DGB', 'MINISTRE'], true)
+        ) {
             $decisionActive = $agent->decisionActive();
             if (! $decisionActive) {
                 return response()->json([
@@ -65,20 +68,23 @@ class DemandeController extends Controller
             ], 422);
         }
 
-        $nombreJours = Carbon::parse($data['date_debut'])->diffInDays($data['date_fin']) + 1;
-
-        $solde = $agent->soldeJours();
-        if ($nombreJours > $solde) {
-            return response()->json([
-                'message' => "Solde insuffisant. Vous disposez de {$solde} jour(s) disponible(s).",
-            ], 422);
+        if ($data['type'] === 'DECISION') {
+            $nombreJours = 0;
+        } else {
+            $nombreJours = Carbon::parse($data['date_debut'])->diffInDays($data['date_fin']) + 1;
+            $solde = $agent->soldeJours();
+            if ($nombreJours > $solde) {
+                return response()->json([
+                    'message' => "Solde insuffisant. Vous disposez de {$solde} jour(s) disponible(s).",
+                ], 422);
+            }
         }
 
         $demande = Demande::create([
             'agent_id'              => $agent->id,
             'type'                  => $data['type'],
-            'date_debut'            => $data['date_debut'],
-            'date_fin'              => $data['date_fin'],
+            'date_debut'            => $data['date_debut'] ?? now()->toDateString(),
+            'date_fin'              => $data['date_fin']   ?? now()->toDateString(),
             'nombre_jours'          => $nombreJours,
             'motif'                 => $data['motif'],
             'lieu_jouissance'       => $data['lieu_jouissance'] ?? null,
@@ -146,7 +152,7 @@ class DemandeController extends Controller
     private function autoriserAcces($user, Demande $demande): void
     {
         $estProprietaire = $demande->agent_id === $user->id;
-        $estValideur     = in_array($user->role, ['CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH'], true);
+        $estValideur     = \in_array($user->role, ['CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH', 'DGB', 'MINISTRE'], true);
 
         if (! $estProprietaire && ! $estValideur) {
             abort(403, 'Accès non autorisé à cette demande.');

@@ -27,7 +27,7 @@ class DivisionSeeder extends Seeder
                 ['sigle' => 'DED',    'nom' => "Division de l'Exploitation et du Développement"],
                 ['sigle' => 'DEM',    'nom' => "Division de l'Équipement et de la Maintenance"],
                 ['sigle' => 'DCQRU',  'nom' => "Division de la Conception, de la Qualité et de la Réglementation de l'Usage"],
-                ['sigle' => 'DPI',    'nom' => "Division des Projets Informatiques"],
+                ['sigle' => 'DPI',    'nom' => "Division des Projets Innovants"],
                 ['sigle' => 'BAF',    'nom' => "Bureau des Affaires Financières"],
             ],
             'DPB' => [

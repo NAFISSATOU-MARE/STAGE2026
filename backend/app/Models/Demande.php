@@ -14,13 +14,15 @@ class Demande extends Model
         'motif', 'lieu_jouissance',
         'statut', 'niveau_courant', 'annee',
         'numero_reference', 'decision_reference_id',
+        'date_validation', 'duree_jours',
     ];
 
     protected function casts(): array
     {
         return [
-            'date_debut' => 'date',
-            'date_fin'   => 'date',
+            'date_debut'      => 'date',
+            'date_fin'        => 'date',
+            'date_validation' => 'datetime',
         ];
     }
 
@@ -39,9 +41,42 @@ class Demande extends Model
         return $this->belongsTo(Demande::class, 'decision_reference_id');
     }
 
+    /**
+     * Circuit de validation selon le rôle du demandeur et le type de demande.
+     *
+     * Tableau ordonné des rôles requis à chaque niveau (index 0 = niveau 1).
+     *
+     * | Demandeur     | Type     | Circuit                               |
+     * |---------------|----------|---------------------------------------|
+     * | DGB           | any      | [MINISTRE]                            |
+     * | DIRECTEUR     | CONGE    | [DGB]                                 |
+     * | DIRECTEUR     | DECISION | [DGB, DRH]                            |
+     * | CHEF_DIVISION | CONGE    | [DIRECTEUR]                           |
+     * | CHEF_DIVISION | DECISION | [DIRECTEUR, DAP, DRH]                 |
+     * | AGENT         | DECISION | [CHEF_DIVISION, DIRECTEUR, DAP, DRH]  |
+     * | AGENT         | CONGE    | [CHEF_DIVISION, DIRECTEUR]            |
+     *
+     * Requires $this->agent to be loaded (lazy-loaded if not already).
+     */
+    public function circuit(): array
+    {
+        $role = $this->agent->role;
+        $type = $this->type;
+
+        return match (true) {
+            $role === 'DGB'                                   => ['MINISTRE'],
+            $role === 'DIRECTEUR' && $type === 'CONGE'        => ['DGB'],
+            $role === 'DIRECTEUR' && $type === 'DECISION'     => ['DGB', 'DRH'],
+            $role === 'CHEF_DIVISION' && $type === 'CONGE'    => ['DIRECTEUR'],
+            $role === 'CHEF_DIVISION' && $type === 'DECISION' => ['DIRECTEUR', 'DAP', 'DRH'],
+            $type === 'DECISION'                              => ['CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH'],
+            default                                           => ['CHEF_DIVISION', 'DIRECTEUR'],
+        };
+    }
+
     public function niveauxMax(): int
     {
-        return $this->type === 'DECISION' ? 4 : 2;
+        return count($this->circuit());
     }
 
     public function estTerminee(): bool
@@ -55,12 +90,17 @@ class Demande extends Model
      */
     public static function genererReference(Agent $agent): string
     {
-        $sigle  = $agent->direction->sigle;
-        $annee  = now()->year;
-        $seq    = static::whereYear('created_at', $annee)
-                        ->whereNotNull('numero_reference')
-                        ->count() + 1;
+        $sigle = match ($agent->role) {
+            'DGB'      => 'DGB',
+            'MINISTRE' => 'MIN',
+            default    => $agent->direction?->sigle ?? 'DGB',
+        };
 
-        return sprintf('DGB/%s/%d/%03d', $sigle, $annee, $seq);
+        $annee = now()->year;
+        $seq   = static::whereYear('created_at', $annee)
+                       ->whereNotNull('numero_reference')
+                       ->count() + 1;
+
+        return \sprintf('DGB/%s/%d/%03d', $sigle, $annee, $seq);
     }
 }

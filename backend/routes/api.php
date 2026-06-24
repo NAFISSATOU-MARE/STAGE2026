@@ -30,8 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/demandes/{demande}/pdf',[DemandeController::class, 'pdf']);
 
     // Validations (réservé aux valideurs)
-    Route::middleware('role:CHEF_DIVISION,DIRECTEUR,DAP,DRH')->group(function () {
+    Route::middleware('role:CHEF_DIVISION,DIRECTEUR,DAP,DRH,DGB,MINISTRE')->group(function () {
         Route::get('/validations/pending',    [ValidationController::class, 'pending']);
+        Route::get('/validations/history',    [ValidationController::class, 'history']);
         Route::post('/validations/{demande}', [ValidationController::class, 'store']);
     });
 

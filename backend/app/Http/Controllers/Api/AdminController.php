@@ -50,19 +50,35 @@ class AdminController extends Controller
             'corps'        => 'nullable|string|max:100',
             'profil'       => 'required|in:CONTRACTUEL,AGENT_ETAT',
             'matricule'    => 'nullable|string|max:50|unique:agents',
-            'role'         => 'required|in:AGENT,CHEF_DIVISION,DIRECTEUR,DAP,DRH,ADMIN,ADMIN_DIRECTION',
+            'role'         => 'required|in:AGENT,CHEF_DIVISION,DIRECTEUR,DAP,DRH,ADMIN,ADMIN_DIRECTION,DGB,MINISTRE',
         ]);
 
-        // ADMIN_DIRECTION : force sa propre direction, interdit ADMIN global
+        // ADMIN_DIRECTION : force sa propre direction, interdit les rôles globaux
         if ($this->isDirectionAdmin()) {
             $data['direction_id'] = $this->myDirId();
-            if (in_array($data['role'], ['ADMIN', 'ADMIN_DIRECTION', 'DAP', 'DRH'])) {
+            if (in_array($data['role'], ['ADMIN', 'ADMIN_DIRECTION', 'DAP', 'DRH', 'DGB', 'MINISTRE'])) {
                 return response()->json(['message' => 'Vous ne pouvez pas attribuer ce rôle.'], 403);
             }
         }
 
-        if (!in_array($data['role'], ['ADMIN']) && (empty($data['direction_id']) || empty($data['division_id']))) {
-            return response()->json(['message' => 'La direction et la division sont obligatoires pour ce rôle.'], 422);
+        // Règles direction/division par rôle :
+        // DIRECTEUR, DAP          : ont une direction, mais pas de division
+        // DRH, DGB, MINISTRE, ADMIN : ni direction ni division
+        $rolesGlobaux   = ['ADMIN', 'DRH', 'DGB', 'MINISTRE'];
+        $rolesSansDiv   = ['ADMIN', 'DIRECTEUR', 'DAP', 'DRH', 'DGB', 'MINISTRE'];
+
+        if (!in_array($data['role'], $rolesGlobaux) && empty($data['direction_id'])) {
+            return response()->json(['message' => 'La direction est obligatoire pour ce rôle.'], 422);
+        }
+        if (!in_array($data['role'], $rolesSansDiv) && empty($data['division_id'])) {
+            return response()->json(['message' => 'La division est obligatoire pour ce rôle.'], 422);
+        }
+        if (in_array($data['role'], ['DIRECTEUR', 'DAP'])) {
+            $data['division_id'] = null;
+        }
+        if (in_array($data['role'], ['DRH', 'DGB', 'MINISTRE', 'ADMIN'])) {
+            $data['direction_id'] = null;
+            $data['division_id']  = null;
         }
 
         $data['password']             = Hash::make($data['password']);
@@ -92,7 +108,7 @@ class AdminController extends Controller
             'corps'        => 'nullable|string|max:100',
             'profil'       => 'sometimes|required|in:CONTRACTUEL,AGENT_ETAT',
             'matricule'    => "nullable|string|max:50|unique:agents,matricule,{$agent->id}",
-            'role'         => 'sometimes|required|in:AGENT,CHEF_DIVISION,DIRECTEUR,DAP,DRH,ADMIN,ADMIN_DIRECTION',
+            'role'         => 'sometimes|required|in:AGENT,CHEF_DIVISION,DIRECTEUR,DAP,DRH,ADMIN,ADMIN_DIRECTION,DGB,MINISTRE',
         ]);
 
         if (!empty($data['password'])) {

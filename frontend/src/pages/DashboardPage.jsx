@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 import StatusBadge from '../components/StatusBadge'
 
-const VALIDATOR_ROLES = ['CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH']
+const VALIDATOR_ROLES = ['CHEF_DIVISION', 'DIRECTEUR', 'DAP', 'DRH', 'DGB', 'MINISTRE']
 
 export default function DashboardPage() {
   const { user }     = useAuth()
@@ -33,9 +33,27 @@ export default function DashboardPage() {
             {user?.direction?.nom} — {user?.division?.nom}
           </div>
         </div>
-        <button className="btn btn-primary" onClick={() => navigate('/demandes/new')}>
-          ✏️ Nouvelle demande
-        </button>
+        {user?.profil === 'AGENT_ETAT' ? (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button className="btn btn-primary" onClick={() => navigate('/demandes/new?type=DECISION')}>
+              ✏️ Demande de décision
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate('/demandes/new?type=CONGE')}
+              disabled={solde !== null && !solde.peut_soumettre_conge}
+              title={solde && !solde.peut_soumettre_conge
+                ? 'Aucune décision active — vous ne pouvez pas encore déposer un congé'
+                : undefined}
+            >
+              ✏️ Demande de congé
+            </button>
+          </div>
+        ) : (
+          <button className="btn btn-primary" onClick={() => navigate('/demandes/new')}>
+            {user?.profil === 'CONTRACTUEL' ? '✏️ Demande de congé' : '✏️ Nouvelle demande'}
+          </button>
+        )}
       </div>
 
       {/* ── Cartes statistiques ── */}
@@ -92,8 +110,8 @@ export default function DashboardPage() {
             <div className="info-row"><span className="info-label">Décision active :</span>
               <span>
                 {solde?.decision_active
-                  ? `Du ${formatDate(solde.decision_active.date_debut)} au ${formatDate(solde.decision_active.date_fin)}`
-                  : 'Aucune'}
+                  ? `Valide jusqu'au ${formatDate(solde.decision_active.date_expiration)}`
+                  : 'Aucune (ou expirée)'}
               </span>
             </div>
           )}

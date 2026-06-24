@@ -55,6 +55,7 @@ export default function LoginPage() {
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               placeholder="prenom.nom@exemple.com"
+              autoComplete="off"
               required autoFocus
             />
           </div>
@@ -67,6 +68,7 @@ export default function LoginPage() {
               value={form.password}
               onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
               placeholder="••••••••"
+              autoComplete="new-password"
               required
             />
           </div>
