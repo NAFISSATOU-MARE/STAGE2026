@@ -42,9 +42,6 @@ export default function Layout({ children }) {
         {/* ══ Sidebar sombre ══ */}
         <aside className="sidebar">
 
-          <div className="sidebar-logo">
-            <LogoSidebar />
-          </div>
 
           {/* ── Menu ADMIN global ── */}
           {isAdmin && (
