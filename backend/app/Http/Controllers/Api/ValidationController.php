@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\DemandeController;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\Demande;
+use App\Models\Notification;
 use App\Models\Validation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -82,10 +84,10 @@ class ValidationController extends Controller
                 });
             }),
 
-            // Valide les demandes DIRECTEUR en niveau 1 (tout type)
+            // Valide au niveau 1 : demandes du DIRECTEUR (tout type) + demandes de congé du DRH
             'DGB' => $query
                 ->where('niveau_courant', 1)
-                ->whereHas('agent', fn($q) => $q->where('role', 'DIRECTEUR')),
+                ->whereHas('agent', fn($q) => $q->whereIn('role', ['DIRECTEUR', 'DRH'])),
 
             // Valide les demandes DGB en niveau 1 (tout type)
             'MINISTRE' => $query
@@ -136,6 +138,7 @@ class ValidationController extends Controller
 
         if ($data['avis'] === 'DEFAVORABLE') {
             $demande->update(['statut' => 'REJETEE']);
+            Notification::rejetRecu($demande, $data['motif_refus'] ?? null);
         } else {
             if ($demande->niveau_courant >= $demande->niveauxMax()) {
                 $demande->load('agent.direction');
@@ -149,8 +152,12 @@ class ValidationController extends Controller
                     $updateData['duree_jours'] = (int) $data['duree_jours'];
                 }
                 $demande->update($updateData);
+                $demande->refresh();
+                Notification::validationRecue($demande);
             } else {
                 $demande->increment('niveau_courant');
+                // Notifier le prochain valideur dans le circuit
+                DemandeController::notifierValideurs($demande, $demande->niveau_courant - 1);
             }
         }
 

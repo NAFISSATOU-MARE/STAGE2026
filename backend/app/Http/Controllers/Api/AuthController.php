@@ -103,6 +103,7 @@ class AuthController extends Controller
             'corps'                => $agent->corps,
             'profil'               => $agent->profil,
             'matricule'            => $agent->matricule,
+            'telephone'            => $agent->telephone,
             'role'                 => $agent->role,
             'must_change_password' => (bool) $agent->must_change_password,
             'direction'            => $agent->direction?->only(['id', 'sigle', 'nom']),

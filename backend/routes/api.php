@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DirectionController;
 use App\Http\Controllers\Api\DemandeController;
 use App\Http\Controllers\Api\ValidationController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminController;
 
 // ─── Public ───────────────────────────────────────────────────────────────────
@@ -24,10 +25,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/directions/{direction}/divisions', [DirectionController::class, 'divisions']);
 
     // Demandes (tout agent sauf ADMIN)
-    Route::get('/demandes',              [DemandeController::class, 'index']);
-    Route::post('/demandes',             [DemandeController::class, 'store']);
-    Route::get('/demandes/{demande}',    [DemandeController::class, 'show']);
-    Route::get('/demandes/{demande}/pdf',[DemandeController::class, 'pdf']);
+    Route::get('/demandes',                      [DemandeController::class, 'index']);
+    Route::post('/demandes',                     [DemandeController::class, 'store']);
+    Route::get('/demandes/{demande}',            [DemandeController::class, 'show']);
+    Route::get('/demandes/{demande}/pdf',        [DemandeController::class, 'pdf']);
+    Route::put('/demandes/{demande}/lettre',     [DemandeController::class, 'updateLettre']);
+
+    // Notifications
+    Route::get('/notifications',              [NotificationController::class, 'index']);
+    Route::put('/notifications/lire-tout',    [NotificationController::class, 'lireTout']);
+    Route::put('/notifications/{notification}/lire', [NotificationController::class, 'lire']);
 
     // Validations (réservé aux valideurs)
     Route::middleware('role:CHEF_DIVISION,DIRECTEUR,DAP,DRH,DGB,MINISTRE')->group(function () {

@@ -15,6 +15,7 @@ class Demande extends Model
         'statut', 'niveau_courant', 'annee',
         'numero_reference', 'decision_reference_id',
         'date_validation', 'duree_jours',
+        'contenu_lettre',
     ];
 
     protected function casts(): array
@@ -23,6 +24,7 @@ class Demande extends Model
             'date_debut'      => 'date',
             'date_fin'        => 'date',
             'date_validation' => 'datetime',
+            'contenu_lettre'  => 'array',
         ];
     }
 
@@ -65,6 +67,7 @@ class Demande extends Model
 
         return match (true) {
             $role === 'DGB'                                   => ['MINISTRE'],
+            $role === 'DRH'                                   => ['DGB'],
             $role === 'DIRECTEUR' && $type === 'CONGE'        => ['DGB'],
             $role === 'DIRECTEUR' && $type === 'DECISION'     => ['DGB', 'DRH'],
             $role === 'CHEF_DIVISION' && $type === 'CONGE'    => ['DIRECTEUR'],

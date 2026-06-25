@@ -114,18 +114,26 @@
 <table class="header-table">
   <tr>
     <td class="header-left">
-      <div class="republic">
-        REPUBLIQUE DU SENEGAL<br>
-        <span style="font-weight:normal;font-style:italic;">Un Peuple – Un But – Une Foi</span>
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        @if(!empty($logoSrc))
+          <img src="{{ $logoSrc }}" alt="Logo DGB"
+               style="height:64px;width:auto;flex-shrink:0;" />
+        @endif
+        <div>
+          <div class="republic">
+            REPUBLIQUE DU SENEGAL<br>
+            <span style="font-weight:normal;font-style:italic;">Un Peuple – Un But – Une Foi</span>
+          </div>
+          <div class="ministry">
+            MINISTERE DE L'ECONOMIE,<br>DES FINANCES ET DU PLAN
+          </div>
+          <div style="margin-top:4px;">
+            <span class="dgb-brand">&#9673;DGB</span><br>
+            <span class="dgb-sub">Direction générale du Budget</span>
+          </div>
+          <div class="direction-name">{{ $agent->direction->nom }}</div>
+        </div>
       </div>
-      <div class="ministry">
-        MINISTERE DE L'ECONOMIE,<br>DES FINANCES ET DU PLAN
-      </div>
-      <div style="margin-top:6px;">
-        <span class="dgb-brand">&#9673;DGB</span><br>
-        <span class="dgb-sub">Direction générale du Budget</span>
-      </div>
-      <div class="direction-name">{{ $agent->direction->nom }}</div>
     </td>
     <td class="header-right">
       <div class="date-line">
@@ -200,8 +208,16 @@
 
 <div class="field">
   Lieu de jouissance du congé :
-  <span class="field-line">{{ $demande->lieu_jouissance ?? '—' }}</span>
+  <span class="field-line">{{ $lettre['lieu_jouissance'] ?? $demande->lieu_jouissance ?? '—' }}</span>
 </div>
+
+{{-- Motif personnalisé (éditable par l'agent avant impression) --}}
+@if(!empty($lettre['motif_lettre']))
+<div class="field" style="margin-top:6px;">
+  Motif :
+  <span class="field-line" style="min-width:350px;">{{ $lettre['motif_lettre'] }}</span>
+</div>
+@endif
 
 {{-- Référence et jours déductibles --}}
 <div class="jours-block">
@@ -357,6 +373,12 @@
   @endphp
   <span class="badge {{ $badgeClass }}">{{ $badgeLabel }}</span>
 </div>
+
+@if(!empty($lettre['complement']))
+<div style="margin-top:12px; font-size:10px; font-style:italic; border-top:1px dashed #ccc; padding-top:6px;">
+  {{ $lettre['complement'] }}
+</div>
+@endif
 
 <div class="page-note">
   Document généré par le Système de Gestion des Congés — DGB &nbsp;|&nbsp;

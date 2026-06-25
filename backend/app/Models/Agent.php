@@ -20,7 +20,7 @@ class Agent extends Authenticatable
         'nom', 'prenom', 'email', 'password',
         'direction_id', 'division_id',
         'poste', 'corps',
-        'profil', 'matricule', 'role', 'must_change_password',
+        'profil', 'matricule', 'telephone', 'role', 'must_change_password',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -101,10 +101,11 @@ class Agent extends Authenticatable
         if ($this->profil === 'CONTRACTUEL') {
             return true;
         }
-        // Seuls DGB et MINISTRE ont leur propre circuit sans prérequis de décision active.
-        if (in_array($this->role, ['DGB', 'MINISTRE'], true)) {
+        // DRH : peut faire un congé sans décision active (il ne fait jamais de décision).
+        if ($this->role === 'DRH') {
             return true;
         }
+        // Tous les autres AGENT_ETAT (AGENT, CHEF_DIVISION, DIRECTEUR, DGB) ont besoin d'une décision active.
         return $this->decisionActive() !== null;
     }
 }

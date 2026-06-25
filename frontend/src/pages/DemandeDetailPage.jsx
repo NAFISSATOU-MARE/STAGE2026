@@ -17,6 +17,7 @@ const ROLE_LABEL = {
 
 function getCircuit(agentRole, type) {
   if (agentRole === 'DGB') return ['MINISTRE']
+  if (agentRole === 'DRH') return ['DGB']
   if (agentRole === 'DIRECTEUR' && type === 'CONGE')    return ['DGB']
   if (agentRole === 'DIRECTEUR' && type === 'DECISION') return ['DGB', 'DRH']
   if (agentRole === 'CHEF_DIVISION' && type === 'CONGE')    return ['DIRECTEUR']
