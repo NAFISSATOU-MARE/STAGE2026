@@ -35,7 +35,14 @@ export default function DashboardPage() {
         </div>
         {user?.profil === 'AGENT_ETAT' ? (
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <button className="btn btn-primary" onClick={() => navigate('/demandes/new?type=DECISION')}>
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate('/demandes/new?type=DECISION')}
+              disabled={solde !== null && !!solde.decision_active}
+              title={solde?.decision_active
+                ? 'Vous avez déjà une décision active en cours'
+                : undefined}
+            >
               ✏️ Demande de décision
             </button>
             <button
@@ -61,7 +68,11 @@ export default function DashboardPage() {
         <div className="stat-card">
           <span className="stat-icon">📅</span>
           <div className="value">{solde?.solde_disponible ?? '—'}</div>
-          <div className="label">Jours disponibles</div>
+          <div className="label">
+            {user?.profil === 'AGENT_ETAT' && !solde?.decision_active
+              ? 'Jours à pouvoir'
+              : 'Jours disponibles'}
+          </div>
         </div>
 
         <div className="stat-card orange">
@@ -92,6 +103,8 @@ export default function DashboardPage() {
           <div className="card-title">Mon profil</div>
           <div className="info-row"><span className="info-label">Profil :</span>
             <span>{user?.profil === 'AGENT_ETAT' ? 'Fonctionnaire' : 'Contractuel'}</span></div>
+          <div className="info-row"><span className="info-label">Téléphone :</span>
+            <span>{user?.telephone || '—'}</span></div>
           <div className="info-row"><span className="info-label">Matricule :</span>
             <span>{user?.matricule || '—'}</span></div>
           <div className="info-row"><span className="info-label">Corps :</span>

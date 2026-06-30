@@ -7,7 +7,6 @@ export default function ChangePasswordPage() {
   const { refreshUser, user } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    current_password:          '',
     new_password:              '',
     new_password_confirmation: '',
   })
@@ -60,19 +59,6 @@ export default function ChangePasswordPage() {
         {error && <div className="alert alert-error">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Mot de passe actuel</label>
-            <input
-              type="password"
-              className="form-control"
-              value={form.current_password}
-              onChange={set('current_password')}
-              required
-              autoFocus
-              placeholder="••••••••"
-            />
-          </div>
-
           <div className="form-group">
             <label>Nouveau mot de passe <span style={{ color: 'var(--gray)', fontWeight: 400 }}>(min. 8 caractères)</span></label>
             <input

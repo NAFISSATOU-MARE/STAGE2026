@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\Demande;
+use App\Models\Notification;
+use App\Services\SmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -39,11 +42,11 @@ class AdminController extends Controller
 
     public function storeAgent(Request $request)
     {
-        $data = $request->validate([
+        $rules = [
             'nom'          => 'required|string|max:100',
             'prenom'       => 'required|string|max:100',
             'email'        => 'required|email|unique:agents',
-            'password'     => 'required|min:6',
+            'telephone'    => 'required|string|max:20',
             'direction_id' => 'nullable|exists:directions,id',
             'division_id'  => 'nullable|exists:divisions,id',
             'poste'        => 'required|string|max:150',
@@ -51,7 +54,13 @@ class AdminController extends Controller
             'profil'       => 'required|in:CONTRACTUEL,AGENT_ETAT',
             'matricule'    => 'nullable|string|max:50|unique:agents',
             'role'         => 'required|in:AGENT,CHEF_DIVISION,DIRECTEUR,DAP,DRH,ADMIN,ADMIN_DIRECTION,DGB,MINISTRE',
-        ]);
+        ];
+
+        if ($request->input('profil') === 'AGENT_ETAT') {
+            $rules['matricule'] = 'required|string|max:50|unique:agents';
+        }
+
+        $data = $request->validate($rules);
 
         // ADMIN_DIRECTION : force sa propre direction, interdit les rôles globaux
         if ($this->isDirectionAdmin()) {
@@ -81,13 +90,19 @@ class AdminController extends Controller
             $data['division_id']  = null;
         }
 
-        $data['password']             = Hash::make($data['password']);
+        $generatedPassword             = Str::random(10);
+        $data['password']             = Hash::make($generatedPassword);
         $data['must_change_password'] = true;
 
-        return response()->json(
-            Agent::create($data)->load(['direction', 'division']),
-            201
-        );
+        $agent = Agent::create($data)->load(['direction', 'division']);
+
+        Notification::compteCree($agent);
+        app(SmsService::class)->sendPassword($agent, $generatedPassword);
+
+        return response()->json([
+            'agent'    => $agent,
+            'message'  => 'Agent créé avec succès. Le mot de passe a été envoyé à l\'agent.',
+        ], 201);
     }
 
     public function updateAgent(Request $request, Agent $agent)
@@ -97,10 +112,11 @@ class AdminController extends Controller
             return response()->json(['message' => 'Accès refusé.'], 403);
         }
 
-        $data = $request->validate([
+        $rules = [
             'nom'          => 'sometimes|required|string|max:100',
             'prenom'       => 'sometimes|required|string|max:100',
             'email'        => "sometimes|required|email|unique:agents,email,{$agent->id}",
+            'telephone'    => 'nullable|string|max:20',
             'password'     => 'nullable|min:6',
             'direction_id' => 'nullable|exists:directions,id',
             'division_id'  => 'nullable|exists:divisions,id',
@@ -109,7 +125,13 @@ class AdminController extends Controller
             'profil'       => 'sometimes|required|in:CONTRACTUEL,AGENT_ETAT',
             'matricule'    => "nullable|string|max:50|unique:agents,matricule,{$agent->id}",
             'role'         => 'sometimes|required|in:AGENT,CHEF_DIVISION,DIRECTEUR,DAP,DRH,ADMIN,ADMIN_DIRECTION,DGB,MINISTRE',
-        ]);
+        ];
+
+        if ($request->input('profil') === 'AGENT_ETAT') {
+            $rules['matricule'] = "required|string|max:50|unique:agents,matricule,{$agent->id}";
+        }
+
+        $data = $request->validate($rules);
 
         if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
@@ -143,7 +165,7 @@ class AdminController extends Controller
     {
         $dirId = $this->isDirectionAdmin() ? $this->myDirId() : null;
 
-        $agentQuery   = Agent::where('role', 'not in', ['ADMIN', 'ADMIN_DIRECTION']);
+        $agentQuery   = Agent::whereNotIn('role', ['ADMIN', 'ADMIN_DIRECTION']);
         $demandeQuery = Demande::query();
 
         if ($dirId) {

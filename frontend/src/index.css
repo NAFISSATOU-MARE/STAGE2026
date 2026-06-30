@@ -12,6 +12,7 @@
   --danger-bg:      #fee2e2;
   --warning:        #b45309;
   --warning-bg:     #fef3c7;
+  --text:           #1f2937;
   --gray:           #6b7280;
   --gray-lt:        #9ca3af;
   --border:         #e5e7eb;
@@ -33,7 +34,7 @@
 body {
   font-family: var(--font);
   background: var(--bg);
-  color: #1f2937;
+  color: var(--text);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -201,7 +202,7 @@ a { color: var(--primary); text-decoration: none; }
 .btn-green   { background: var(--dgb-green); color: var(--white); box-shadow: 0 2px 8px rgba(27,122,58,.2); }
 .btn-success { background: var(--success);   color: var(--white); }
 .btn-danger  { background: var(--danger);    color: var(--white); }
-.btn-outline { background: var(--white); border: 1.5px solid var(--border); color: #374151; }
+.btn-outline { background: var(--white); border: 1.5px solid var(--border); color: var(--text); }
 .btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); opacity: 1; }
 .btn-sm { padding: 5px 12px; font-size: 12px; }
 
@@ -211,7 +212,7 @@ a { color: var(--primary); text-decoration: none; }
   display: block;
   font-size: 11px;
   font-weight: 700;
-  color: #374151;
+  color: var(--text);
   margin-bottom: 5px;
   text-transform: uppercase;
   letter-spacing: .5px;
@@ -223,7 +224,7 @@ a { color: var(--primary); text-decoration: none; }
   border-radius: var(--radius);
   font-size: 14px;
   font-family: var(--font);
-  color: #1f2937;
+  color: var(--text);
   background: var(--white);
   transition: border-color .15s, box-shadow .15s;
 }
@@ -363,35 +364,73 @@ tbody tr:hover td { background: #fafbff; }
   --white:      #1e293b;
   --border:     #334155;
   --primary-bg: #1e2a40;
+  --primary:    #60a5fa;
+  --text:       #e2e8f0;
   --gray:       #94a3b8;
   --gray-lt:    #64748b;
   --shadow:     0 1px 4px rgba(0,0,0,.4);
   --shadow-md:  0 4px 16px rgba(0,0,0,.45);
   --shadow-lg:  0 8px 32px rgba(0,0,0,.55);
+  --success:    #4ade80;
+  --success-bg: #0f2a1a;
+  --danger:     #f87171;
+  --danger-bg:  #3b1414;
+  --warning:    #fbbf24;
+  --warning-bg: #2a1f0a;
 }
-[data-theme="dark"] body      { color: #e2e8f0; }
-[data-theme="dark"] .card     { background: var(--white); }
-[data-theme="dark"] .stat-card { background: var(--white); }
+[data-theme="dark"] body                 { color: #e2e8f0; }
+[data-theme="dark"] .card                { background: var(--white); }
+[data-theme="dark"] .card-title          { color: #94a3b8; }
+[data-theme="dark"] .stat-card           { background: var(--white); }
+[data-theme="dark"] .stat-card .value    { color: #60a5fa; }
+[data-theme="dark"] .stat-card.green   .value { color: #4ade80; }
+[data-theme="dark"] .stat-card.orange  .value { color: #fbbf24; }
+[data-theme="dark"] .stat-card.purple  .value { color: #a78bfa; }
+[data-theme="dark"] .stat-card.red     .value { color: #f87171; }
+[data-theme="dark"] .stat-card.sky     .value { color: #38bdf8; }
+[data-theme="dark"] .stat-card.teal    .value { color: #2dd4bf; }
 [data-theme="dark"] .form-control {
   background: #0f172a; color: #e2e8f0; border-color: #334155;
 }
-[data-theme="dark"] .form-control:focus { box-shadow: 0 0 0 3px rgba(74,125,212,.2); }
-[data-theme="dark"] .form-control[readonly] { background: #0d1424; }
-[data-theme="dark"] th { background: #1e2a40; color: #93c5fd; }
-[data-theme="dark"] td { border-color: #334155; }
-[data-theme="dark"] tbody tr:hover td { background: #243044; }
+[data-theme="dark"] .form-control:focus          { box-shadow: 0 0 0 3px rgba(96,165,250,.2); }
+[data-theme="dark"] .form-control[readonly]      { background: #0d1424; }
+[data-theme="dark"] .form-group label            { color: #cbd5e1; }
+[data-theme="dark"] select.form-control          { background: #0f172a; color: #e2e8f0; }
+[data-theme="dark"] select.form-control option   { background: #1e293b; color: #e2e8f0; }
+[data-theme="dark"] th {
+  background: #1e2a40; color: #93c5fd;
+}
+[data-theme="dark"] td                     { border-color: #334155; color: #e2e8f0; }
+[data-theme="dark"] tbody tr:hover td      { background: #243044; }
+[data-theme="dark"] a                      { color: #60a5fa; }
 [data-theme="dark"] .btn-outline {
   background: #1e293b; border-color: #334155; color: #e2e8f0;
 }
 [data-theme="dark"] .btn-outline:hover:not(:disabled) {
-  border-color: #93c5fd; color: #93c5fd; opacity: 1;
+  border-color: #60a5fa; color: #60a5fa; opacity: 1;
 }
-[data-theme="dark"] .modal-box  { background: #1e293b; }
-[data-theme="dark"] .login-box  { background: #1e293b; }
+[data-theme="dark"] .btn-primary { background: #1e40af; }
+[data-theme="dark"] .btn-green   { background: #166534; }
+[data-theme="dark"] .btn-success { background: #166534; }
+[data-theme="dark"] .btn-danger  { background: #991b1b; }
+[data-theme="dark"] .modal-box   { background: #1e293b; }
+[data-theme="dark"] .modal-title { color: #60a5fa; }
+[data-theme="dark"] .login-box   { background: #1e293b; }
+[data-theme="dark"] .page-header { border-color: #334155; }
+[data-theme="dark"] .page-title  { color: #e2e8f0; }
+[data-theme="dark"] .info-row    { color: #e2e8f0; }
+[data-theme="dark"] .info-label  { color: #94a3b8; }
+[data-theme="dark"] .badge-attente  { background: #2a1f0a; color: #fbbf24; }
+[data-theme="dark"] .badge-approuve { background: #0f2a1a; color: #4ade80; }
+[data-theme="dark"] .badge-rejete   { background: #3b1414; color: #f87171; }
 [data-theme="dark"] .alert-error   { background: #3b1414; color: #fca5a5; }
 [data-theme="dark"] .alert-success { background: #0f2a1a; color: #86efac; }
 [data-theme="dark"] .alert-info    { background: #1e2a40; color: #93c5fd; }
-[data-theme="dark"] select.form-control option { background: #1e293b; }
+[data-theme="dark"] .empty-state   { color: #64748b; }
+[data-theme="dark"] .divider       { border-color: #334155; }
+[data-theme="dark"] .modal-actions { border-color: #334155; }
+[data-theme="dark"] .sidebar-section { color: rgba(255,255,255,.25); }
+[data-theme="dark"] .login-dgb-sub   { color: #94a3b8; }
 
 /* ════════════════════════════════════════════════════════════
    RESPONSIVE — mobile / tablette

@@ -63,4 +63,14 @@ class Notification extends Model
             'message'    => $msg,
         ]);
     }
+
+    public static function compteCree(Agent $agent): void
+    {
+        static::create([
+            'agent_id'   => $agent->id,
+            'type'       => 'COMPTE_CREE',
+            'demande_id' => null,
+            'message'    => "Bienvenue ! Votre compte a été créé. Votre mot de passe vous a été envoyé par email.",
+        ]);
+    }
 }

@@ -99,6 +99,7 @@ export default function Layout({ children }) {
     VALIDATION_REQUISE: { icon: '📋', color: '#3b82f6' },
     VALIDATION_RECUE:   { icon: '✅', color: '#16a34a' },
     REJET_RECU:         { icon: '❌', color: '#dc2626' },
+    COMPTE_CREE:        { icon: '🎉', color: '#f59e0b' },
   }
 
   return (
@@ -197,7 +198,7 @@ export default function Layout({ children }) {
                       {typeLabel[n.type]?.icon ?? '🔔'}
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, color: '#1f2937', lineHeight: 1.4,
+                      <div style={{ fontSize: 12, color: 'var(--text)', lineHeight: 1.4,
                                     fontWeight: n.lu ? 400 : 600 }}>
                         {n.message}
                       </div>
@@ -288,7 +289,7 @@ export default function Layout({ children }) {
                       paddingBottom: 6, borderBottom: '1px solid var(--border)',
                     }}>
                       <span style={{ color: 'var(--gray)', minWidth: 80 }}>{label} :</span>
-                      <span style={{ fontWeight: 500, color: '#1f2937', wordBreak: 'break-word' }}>{val}</span>
+                      <span style={{ fontWeight: 500, color: 'var(--text)', wordBreak: 'break-word' }}>{val}</span>
                     </div>
                   ))}
                 </div>
