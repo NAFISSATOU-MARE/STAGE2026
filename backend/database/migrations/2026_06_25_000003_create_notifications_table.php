@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('agent_id')->constrained('agents')->cascadeOnDelete();
-            $table->enum('type', ['VALIDATION_REQUISE', 'VALIDATION_RECUE', 'REJET_RECU']);
+            $table->string('type', 50);
             $table->foreignId('demande_id')->nullable()->constrained('demandes')->nullOnDelete();
             $table->string('message');
             $table->boolean('lu')->default(false);

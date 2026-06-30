@@ -16,7 +16,7 @@ const ROLE_COLOR = {
 }
 
 const INIT = {
-  nom: '', prenom: '', email: '', password: '',
+  nom: '', prenom: '', email: '', telephone: '+221 ',
   direction_id: '', division_id: '',
   poste: '', corps: '', profil: 'CONTRACTUEL',
   matricule: '', role: 'AGENT',
@@ -57,7 +57,7 @@ export default function AgentsAdminPage() {
       nom:          a.nom,
       prenom:       a.prenom,
       email:        a.email,
-      password:     '',
+      telephone:    a.telephone   ?? '+221 ',
       direction_id: a.direction_id ?? '',
       division_id:  a.division_id  ?? '',
       poste:        a.poste,
@@ -70,9 +70,17 @@ export default function AgentsAdminPage() {
     setModal(a)
   }
 
-  const fermer = () => { setModal(null); setError('') }
+  const fermer = () => { setModal(null); setError(''); setCreatedPassword('') }
 
   const set = field => e => setForm(f => ({ ...f, [field]: e.target.value }))
+
+  const handleTelephone = e => {
+    let v = e.target.value
+    if (!v.startsWith('+221 ')) {
+      v = '+221 ' + v.replace(/[^0-9\s]/g, '')
+    }
+    setForm(f => ({ ...f, telephone: v }))
+  }
 
   const handleDir = e => setForm(f => ({ ...f, direction_id: e.target.value, division_id: '' }))
 
@@ -96,10 +104,13 @@ export default function AgentsAdminPage() {
     }))
   }
 
+  const [createdPassword, setCreatedPassword] = useState('')
+
   const soumettre = async e => {
     e.preventDefault()
     setSending(true)
     setError('')
+    setCreatedPassword('')
     try {
       const payload = {
         ...form,
@@ -108,14 +119,14 @@ export default function AgentsAdminPage() {
         corps:        form.corps        || null,
         matricule:    form.matricule    || null,
       }
-      if (!payload.password) delete payload.password
 
       if (modal === 'create') {
-        await api.post('/api/admin/agents', payload)
+        const res = await api.post('/api/admin/agents', payload)
+        setCreatedPassword(res.data.message || 'Agent créé avec succès.')
       } else {
         await api.put(`/api/admin/agents/${modal.id}`, payload)
+        fermer()
       }
-      fermer()
       charger()
     } catch (err) {
       const errs = err.response?.data?.errors
@@ -264,7 +275,17 @@ export default function AgentsAdminPage() {
             </div>
 
             {error && <div className="alert alert-error">{error}</div>}
+            {createdPassword && (
+              <div className="alert alert-success">
+                {createdPassword}
+                <br /><button className="btn btn-sm btn-outline" style={{ marginTop: 10 }}
+                  onClick={() => { fermer(); setCreatedPassword('') }}>
+                  OK
+                </button>
+              </div>
+            )}
 
+            {!createdPassword && (
             <form onSubmit={soumettre}>
 
               <div className="form-grid">
@@ -289,13 +310,13 @@ export default function AgentsAdminPage() {
               <div className="form-group">
                 <label>
                   {modal === 'create'
-                    ? 'Mot de passe *'
-                    : 'Nouveau mot de passe (laisser vide = inchangé)'}
+                    ? 'Numéro de téléphone *'
+                    : 'Téléphone'}
                 </label>
-                <input type="password" className="form-control" value={form.password}
-                  onChange={set('password')} autoComplete="new-password"
+                <input type="tel" className="form-control" value={form.telephone}
+                  onChange={handleTelephone} autoComplete="tel"
                   required={modal === 'create'}
-                  placeholder={modal === 'create' ? '' : '••••••••'} />
+                  placeholder="77 123 45 67" />
               </div>
 
               <div className="form-group">
@@ -380,9 +401,11 @@ export default function AgentsAdminPage() {
               </div>
 
               <div className="form-group">
-                <label>Matricule</label>
+                <label>Matricule {form.profil === 'AGENT_ETAT' ? '*' : ''}</label>
                 <input className="form-control" value={form.matricule}
-                  onChange={set('matricule')} placeholder="ex: MAT-DSI-001" />
+                  onChange={set('matricule')}
+                  required={form.profil === 'AGENT_ETAT'}
+                  placeholder={form.profil === 'AGENT_ETAT' ? 'ex: MAT-DSI-001' : 'Optionnel pour contractuel'} />
               </div>
 
               <div className="modal-actions">
@@ -396,6 +419,7 @@ export default function AgentsAdminPage() {
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       )}

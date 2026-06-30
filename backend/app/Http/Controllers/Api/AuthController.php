@@ -51,16 +51,11 @@ class AuthController extends Controller
     public function changePassword(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'current_password'          => 'required|string',
             'new_password'              => 'required|string|min:8|confirmed',
             'new_password_confirmation' => 'required|string',
         ]);
 
         $agent = $request->user();
-
-        if (! Hash::check($data['current_password'], $agent->password)) {
-            return response()->json(['message' => 'Mot de passe actuel incorrect.'], 422);
-        }
 
         $agent->update([
             'password'             => Hash::make($data['new_password']),
